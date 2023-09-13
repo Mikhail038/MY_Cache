@@ -1,0 +1,12 @@
+[
+ {
+  "directory": "/home/mikhail038/Work/Vlados/MyCache",
+  "arguments": [
+   "g++",
+   "my_cache.cpp",
+   "-o",
+   "my_cache"
+  ],
+  "file": "my_cache.cpp"
+ }
+]
