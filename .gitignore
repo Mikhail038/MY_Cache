@@ -1,0 +1,3 @@
+*.json
+.cache
+my_cache
