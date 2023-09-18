@@ -54,5 +54,6 @@ int main()
         }
     }
 
-    std::cout << std::endl << "LRU hits: " << lru_hits << std::endl << "ORA hits: " << ora_hits << std::endl;
+    std::cout << std::endl  << "LRU hits: " << lru_hits << "/" << number_of_queries << std::endl
+                            << "ORA hits: " << ora_hits << "/" << number_of_queries << std::endl;
 }
