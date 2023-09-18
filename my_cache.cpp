@@ -1,6 +1,6 @@
 #include <cstring>
 #include <iostream>
-
+#include <fstream>
 
 #include <cassert>
 #include <iostream>
@@ -9,7 +9,10 @@
 #include "my_cache.hpp"
 
 // slow get page imitation
-int slow_get_page_int(int key) { return key; }
+int slow_get_page_int(int key)
+{
+    return key;
+}
 
 int main()
 {

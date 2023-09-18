@@ -84,6 +84,7 @@ template <typename ValueT, typename KeyT = int> struct CacheORA //ORA for ORAcle
 {
     size_t size_;
     std::vector<ValueT> request_array_;
+    int current_request_num_;
 
     std::list<std::pair<KeyT, ValueT>> cachelist_;
 
@@ -94,12 +95,18 @@ template <typename ValueT, typename KeyT = int> struct CacheORA //ORA for ORAcle
 
     CacheORA(size_t size, std::vector<ValueT> request_array) :
     size_(size),
-    request_array_(request_array)
+    request_array_(request_array),
+    current_request_num_(0)
     {}
     //================================================================================================================================================================================
 
     void print_cacheline ()
     {
+        if (cachelist_.begin() == cachelist_.end())
+        {
+            std::cout << "[ ]";
+        }
+
         for (list_it cnt = cachelist_.begin(); cnt != cachelist_.end(); ++cnt)
         {
             std::cout << "[" << cnt->first << "]";
@@ -112,7 +119,7 @@ template <typename ValueT, typename KeyT = int> struct CacheORA //ORA for ORAcle
 
     int find_next_request (list_it current_spot)
     {
-        for (int cnt = 0; cnt != request_array_.size(); ++cnt)
+        for (int cnt = current_request_num_; cnt != request_array_.size(); ++cnt)
         {
             if (request_array_[cnt] == current_spot->first)
             {
@@ -134,16 +141,21 @@ template <typename ValueT, typename KeyT = int> struct CacheORA //ORA for ORAcle
     void free_spot_in_cacheline ()
     {
         auto useless_spot = cachelist_.begin();
-        int useless_spot_time = 0;
+        int useless_spot_time = find_next_request(cachelist_.begin());
         int this_spot_time = 0;
 
         for (list_it cnt = cachelist_.begin(); cnt != cachelist_.end() ; ++cnt)
         {
             this_spot_time = find_next_request (cnt);
 
+            #ifdef _DEBUG
+            std::cout << "[" << (*cnt).first << "] time " << this_spot_time << " largest time " << useless_spot_time << std::endl;
+            #endif
+
             if (this_spot_time > useless_spot_time)
             {
                 useless_spot = cnt;
+                useless_spot_time = this_spot_time;
             }
         }
 
@@ -154,7 +166,11 @@ template <typename ValueT, typename KeyT = int> struct CacheORA //ORA for ORAcle
     template <typename FunctionT>
     bool lookup_update(KeyT key, FunctionT slow_get_page)
     {
+        #ifdef _DEBUG
         print_cacheline();
+
+        std::cout << "request " << key << std::endl;
+        #endif
 
         auto hit = hash_.find(key);
         if (hit == hash_.end())
@@ -167,15 +183,26 @@ template <typename ValueT, typename KeyT = int> struct CacheORA //ORA for ORAcle
             cachelist_.emplace_front(key, slow_get_page(key));
             hash_.emplace(key, cachelist_.begin());
 
+            #ifdef _DEBUG
+            std::cout << "no hit " << std::endl;
+            #endif
+
+            ++current_request_num_;
             return false;
         }
 
         auto hited_value = hit->second;
-        if (hited_value != cachelist_.begin())
-        {
-            cachelist_.splice(cachelist_.begin(), cachelist_, hited_value, std::next(hited_value));
-        }
+        // if (hited_value != cachelist_.begin())
+        // {
+        //     cachelist_.splice(cachelist_.begin(), cachelist_, hited_value, std::next(hited_value));
+        // }
 
+        #ifdef _DEBUG
+        std::cout << "hit " <<  (*hited_value).second << std::endl;
+        #endif
+
+
+        ++current_request_num_;
         return true;
     }
 };
